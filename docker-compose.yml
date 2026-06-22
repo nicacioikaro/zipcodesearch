@@ -1,0 +1,83 @@
+# docker-compose.yml
+# Orchestrates four services: the database (Postgres), the metrics collector
+# (Prometheus), the dashboard (Grafana), and the log collector (Loki).
+# Bring everything up with:  docker compose up -d
+#
+# Read the comments — each block explains WHAT it does and WHY.
+
+services:
+
+  # ─────────────────────────────────────────────────────────────
+  # 1) POSTGRES — the application database
+  # ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:17                 # official image; replaces the custom Dockerfile
+    container_name: zipcode-postgres
+    environment:                       # same envs that were in the Dockerfile
+      POSTGRES_DB: zipcode_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      # HOST:CONTAINER — the app connects on localhost:5433, while Postgres
+      # inside the container listens on 5432. This mapping is what makes the
+      # 5433 in application.yaml work.
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # persists data across container restarts
+      # If pg_trgm is NOT created by a Flyway migration, uncomment the line below
+      # and create init.sql with:  CREATE EXTENSION IF NOT EXISTS pg_trgm;
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:                       # compose only marks the DB "ready" once this passes
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zipcode_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────────────────────
+  # 2) PROMETHEUS — scrapes the application's metrics
+  # ─────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: zipcode-prometheus
+    ports:
+      - "9090:9090"                    # Prometheus UI at http://localhost:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml   # scrape config (separate file)
+    extra_hosts:
+      # LINUX: this lets the container reach THE HOST MACHINE. Without it,
+      # "localhost" inside the container is the container itself, not the
+      # host where the app runs.
+      - "host.docker.internal:host-gateway"
+
+  # ─────────────────────────────────────────────────────────────
+  # 3) GRAFANA — reads from Prometheus and Loki, draws the dashboards
+  # ─────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: zipcode-grafana
+    ports:
+      - "3000:3000"                    # Grafana UI at http://localhost:3000 (login: admin / admin)
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - prometheus                     # start Grafana only after Prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana  # persists dashboards/config across restarts
+
+  # ─────────────────────────────────────────────────────────────
+  # 4) LOKI — the application's log collector
+  # ─────────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:latest
+    container_name: zipcode-loki
+    ports:
+      - "3100:3100"                    # port where Loki receives logs and answers queries
+    command: -config.file=/etc/loki/local-config.yaml   # uses the built-in default config
+
+# ───────────────────────────────────────────────────────────────
+# Named volumes — where data survives "docker compose down"
+# ───────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:
+  grafana_data:
