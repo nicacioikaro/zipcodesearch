@@ -25,10 +25,10 @@ public class CepResolver {
             } catch (ZipcodeNotFound e) {
                 // a confirmed "not found" is authoritative: the CEP doesn't exist,
                 // so stop the chain instead of asking the next source
-                throw e;                       // não existe → para a cadeia
+                throw e;
             } catch (ProviderException e) {
                 // technical failure of this source → fall back to the next one
-                log.warn("Provider {} falhou após resiliência, tentando próximo", provider.name(), e);
+                log.warn("Provider {} failed after resilience handling, trying next provider", provider.name(), e);
             }
         }
         throw new AllProvidersFailedException(cep);

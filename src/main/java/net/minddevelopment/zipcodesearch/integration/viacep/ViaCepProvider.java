@@ -9,9 +9,6 @@ import net.minddevelopment.zipcodesearch.shared.exception.ZipcodeNotFound;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-
 @Component
 @Order(1)
 @RequiredArgsConstructor
