@@ -240,4 +240,4 @@ Coverage is intentionally dimensioned to risk: orchestration and resilience are 
 
 ## License
 
-This project is part of a personal portfolio.
+his project is licensed under the MIT License — see the LICENSE file.
