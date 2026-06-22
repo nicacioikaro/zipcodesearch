@@ -11,6 +11,8 @@
   <img alt="Build" src="https://img.shields.io/badge/build-Maven-red">
 </p>
 
+**🔴 Live demo:** [zipcodesearch.onrender.com](https://zipcodesearch.onrender.com/swagger-ui/index.html) — interactive Swagger UI, try the endpoints directly in the browser.
+
 ---
 
 ## Overview
@@ -60,7 +62,7 @@ CEP data is intentionally **denormalized** into a single table. Because this is 
 
 ### Deployment intent (production)
 
-The application is designed to be **container-first and Kubernetes-friendly**: it is stateless, ships logs and metrics for scraping, and externalizes all configuration — so running it as one or more replicas in a cluster is the intended production shape.
+The application is **container-first and Kubernetes-friendly**: it is stateless, ships logs and metrics for scraping, and externalizes all configuration — so running it as one or more replicas in a cluster is the intended production shape. The Kubernetes manifests in [`k8s/`](k8s/) were **validated on a local kind cluster** (app + PostgreSQL + Prometheus/Grafana via Helm running in-cluster — see `k8s/README.md` for the screenshots). (Kubernetes manifests are not part of this repository yet; see the roadmap.)
 
 One deliberate architectural stance: **in production, PostgreSQL should run *outside* the Kubernetes cluster** — as a managed service or a dedicated host — not as a pod. Databases are stateful and have very different lifecycle, storage, and failover needs than stateless app workloads; keeping the database off the cluster avoids a class of operational problems that running stateful sets in K8s tends to invite. The cluster runs the stateless app; the data lives on stable, dedicated infrastructure.
 
@@ -174,6 +176,8 @@ Once up:
 
 ## Getting Started
 
+> Prefer to just try it? Use the [live demo](https://zipcodesearch.onrender.com/swagger-ui/index.html) — no setup required.
+
 ### Prerequisites
 
 - Java 21
@@ -227,10 +231,10 @@ Coverage is intentionally dimensioned to risk: orchestration and resilience are 
 
 ## Roadmap
 
+- [x] Live demo deployed (Render).
+- [x] Kubernetes manifests, validated on a local kind cluster.
 - [ ] Additional CEP providers (e.g. BrasilAPI) to exercise the multi-source abstraction.
 - [ ] Scheduled revalidation of stored CEP data (e.g. every 30 days).
-- [ ] Kubernetes manifests for the stateless app (database stays managed/external).
-- [ ] Containerize the application into the Compose stack for a one-command, full-stack startup.
 
 ---
 
