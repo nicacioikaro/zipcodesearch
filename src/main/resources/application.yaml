@@ -13,6 +13,7 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+
 resilience4j:
   retry:
     instances:
@@ -38,3 +39,12 @@ resilience4j:
           - net.minddevelopment.zipcodesearch.integration.cep.exception.ProviderException
         ignore-exceptions:
           - net.minddevelopment.zipcodesearch.shared.exception.ZipcodeNotFound
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
