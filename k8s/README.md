@@ -86,8 +86,30 @@ kubectl get servicemonitor zipcodesearch       # Prometheus should pick it up
 - the base64 password in `secret.yaml`
 - the `release:` label in `servicemonitor.yaml` must match your kube-prometheus-stack release name
 
-## Status
+## Status — validated on kind
 
-These manifests describe the intended production shape. **Validate them on a real
-cluster (kind/minikube) before relying on them** — untested manifests are worse than
-none. Update this section once validated (e.g. "validated on kind v0.x, k8s v1.3x").
+These manifests were **validated on a local kind cluster** (Kubernetes in Docker).
+The full stack runs in-cluster: the application (2 replicas), a PostgreSQL test
+fixture, and the observability stack (Prometheus + Grafana via Helm /
+kube-prometheus-stack). For local testing the observability components live in the
+`monitoring` namespace.
+
+**Everything running in the cluster** (`kubectl get pods --all-namespaces`):
+
+![All pods running](images/print1.png)
+
+**Application — 2 replicas healthy** (`kubectl get pods -l app=zipcodesearch`):
+
+![App pods](images/print3.png)
+
+**Prometheus discovers the app via ServiceMonitor** (`kubectl get servicemonitor`):
+
+![ServiceMonitor](images/print2.png)
+
+> Notes for reproduction:
+> - The app image is built locally and loaded with `kind load docker-image`
+    >   (no external registry needed), so `imagePullPolicy: IfNotPresent` is required.
+> - PostgreSQL here is an in-cluster **test fixture** (`postgres-local.yaml`).
+    >   In production the database stays **outside** the cluster, as described above.
+> - Loki was omitted from this run to keep it lean; logs were already validated
+    >   via the Docker Compose stack (see the main README).

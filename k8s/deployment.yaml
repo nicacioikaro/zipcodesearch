@@ -27,7 +27,8 @@ spec:
       containers:
         - name: zipcodesearch
           # Replace with your registry path, e.g. ghcr.io/<user>/zipcodesearch:1.0.0
-          image: CHANGE_ME_REGISTRY/zipcodesearch:latest
+          image: zipcodesearch:1.0.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           # Pull config from the ConfigMap and Secret (12-factor: config in the env)

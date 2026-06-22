@@ -12,12 +12,12 @@ data:
   # In production this is your RDS/Cloud SQL endpoint.
   # For local cluster testing, point it at the Postgres reachable from the cluster
   # (e.g. the host machine's IP where your docker-compose Postgres runs).
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://CHANGE_ME_DB_HOST:5432/zipcode_db"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/zipcode_db"
   SPRING_DATASOURCE_USERNAME: "postgres"
 
   # Loki endpoint (in-cluster, installed via Helm — see k8s/README.md).
   # The app's logback-spring.xml should read this to know where to push logs.
-  LOKI_URL: "http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push"
+  LOKI_URL: "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
 
   # Expose the actuator endpoints needed for health probes and Prometheus scraping.
   MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
