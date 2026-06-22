@@ -1,0 +1,18 @@
+# service.yaml
+# A stable in-cluster address for the app's pods. Pods come and go (and change IP);
+# the Service gives them one constant name (zipcodesearch.<namespace>.svc) and
+# load-balances across the replicas.
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipcodesearch
+  labels:
+    app: zipcodesearch
+spec:
+  type: ClusterIP                 # internal only; external access goes through the Ingress
+  selector:
+    app: zipcodesearch            # routes to pods with this label (matches the Deployment)
+  ports:
+    - name: http
+      port: 80                    # the port the Service exposes inside the cluster
+      targetPort: 8080            # the port the container actually listens on

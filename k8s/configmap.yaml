@@ -1,0 +1,23 @@
+# configmap.yaml
+# Non-sensitive configuration for the app. Sensitive values (DB password) live in
+# the Secret, NOT here. ConfigMaps are plain text — never put credentials in them.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zipcodesearch-config
+  labels:
+    app: zipcodesearch
+data:
+  # PostgreSQL lives OUTSIDE the cluster (managed service / dedicated host).
+  # In production this is your RDS/Cloud SQL endpoint.
+  # For local cluster testing, point it at the Postgres reachable from the cluster
+  # (e.g. the host machine's IP where your docker-compose Postgres runs).
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://CHANGE_ME_DB_HOST:5432/zipcode_db"
+  SPRING_DATASOURCE_USERNAME: "postgres"
+
+  # Loki endpoint (in-cluster, installed via Helm — see k8s/README.md).
+  # The app's logback-spring.xml should read this to know where to push logs.
+  LOKI_URL: "http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push"
+
+  # Expose the actuator endpoints needed for health probes and Prometheus scraping.
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"

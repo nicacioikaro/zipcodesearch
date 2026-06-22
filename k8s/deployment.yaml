@@ -1,0 +1,61 @@
+# deployment.yaml
+# The stateless application workload. This is what Kubernetes is good at:
+# stateless replicas it can reschedule, scale, and roll out freely.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipcodesearch
+  labels:
+    app: zipcodesearch
+spec:
+  replicas: 2                      # stateless -> safe to run multiple replicas
+  selector:
+    matchLabels:
+      app: zipcodesearch
+  template:
+    metadata:
+      labels:
+        app: zipcodesearch
+      annotations:
+        # Lets a Prometheus that uses pod annotations discover this pod.
+        # (If you use the Prometheus Operator's ServiceMonitor instead, this is
+        # redundant — see k8s/servicemonitor.yaml. Keep whichever your setup uses.)
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+        - name: zipcodesearch
+          # Replace with your registry path, e.g. ghcr.io/<user>/zipcodesearch:1.0.0
+          image: CHANGE_ME_REGISTRY/zipcodesearch:latest
+          ports:
+            - containerPort: 8080
+          # Pull config from the ConfigMap and Secret (12-factor: config in the env)
+          envFrom:
+            - configMapRef:
+                name: zipcodesearch-config
+            - secretRef:
+                name: zipcodesearch-secret
+          # Probes use Actuator health. K8s uses these to know when the pod is
+          # ready for traffic (readiness) and when to restart it (liveness).
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          # Resource requests/limits: requests = what's reserved, limits = the ceiling.
+          # Tune to your real usage; these are sane starting points for a small service.
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"

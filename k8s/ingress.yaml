@@ -1,0 +1,28 @@
+# ingress.yaml
+# Exposes the Service to the outside world over HTTP(S). Requires an Ingress
+# controller installed in the cluster (e.g. ingress-nginx). Without a controller,
+# this object does nothing — it's just a routing rule waiting for a controller to honor it.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zipcodesearch
+  labels:
+    app: zipcodesearch
+  annotations:
+    # Example for ingress-nginx. Adjust to your controller.
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: CHANGE_ME.example.com    # the public hostname you'll point at the cluster
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: zipcodesearch
+                port:
+                  number: 80
+  # For TLS, add a tls: block referencing a Secret with your cert
+  # (commonly issued automatically by cert-manager).
