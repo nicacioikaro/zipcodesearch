@@ -13,3 +13,28 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+resilience4j:
+  retry:
+    instances:
+      viacep:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - net.minddevelopment.zipcodesearch.integration.cep.exception.ProviderException
+        ignore-exceptions:
+          - net.minddevelopment.zipcodesearch.shared.exception.ZipcodeNotFound
+  circuitbreaker:
+    instances:
+      viacep:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+        record-exceptions:
+          - net.minddevelopment.zipcodesearch.integration.cep.exception.ProviderException
+        ignore-exceptions:
+          - net.minddevelopment.zipcodesearch.shared.exception.ZipcodeNotFound
